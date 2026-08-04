@@ -33,7 +33,7 @@ mov fs,ax
 mov gs,ax
 
 ;find empty sectors,fat12 or fat16,fat32
-mov dword ptr cs:[freesecno],80000h		;2^9 * 2 ^ 20 = 2^29 = 512M
+mov dword ptr cs:[freesecno],80000h		;2^9 * 2 ^ 19 = 2^28 = 256M
 jmp __FindPrevOS
 
 __ReadDiskBlock:
@@ -321,6 +321,12 @@ __readFileBlock:
 push ecx
 push ds
 
+mov ax,4200h
+mov bx,cs:[handle]
+mov cx,word ptr ss:[ebp - 2ah]
+mov dx,word ptr ss:[ebp - 2ch]
+int 21h
+
 mov ax,3f00h
 mov dx,0
 mov bx,cs:[handle]
@@ -361,12 +367,17 @@ pop ds
 pop ecx
 sub ecx,DOS_READ_FILE_MAX
 cmp ecx,DOS_READ_FILE_MAX
-jg __readFileBlock
+jge __readFileBlock
 jz __closeFileHandle
 
 mov dword ptr ss:[ebp - 28h],ecx
 
 _readFileLeast:
+mov ax,4200h
+mov bx,cs:[handle]
+mov cx,word ptr ss:[ebp - 2ah]
+mov dx,word ptr ss:[ebp - 2ch]
+int 21h
 mov ax,3f00h
 mov dx,0
 mov ecx,dword ptr ss:[ebp - 28h]
